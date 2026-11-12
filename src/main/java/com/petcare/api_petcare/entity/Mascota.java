@@ -1,7 +1,9 @@
 package com.petcare.api_petcare.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -18,11 +20,14 @@ public class Mascota {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
+    @NotBlank(message = "El nombre es obligatorio")
     @Column(nullable = false)
     private String nombre;
 
+    @NotBlank(message = "La especie es obligatoria")
     @Column(nullable = false)
     private String especie;
 
@@ -36,8 +41,8 @@ public class Mascota {
     @JsonIgnoreProperties("mascotas")
     private Dueno dueno;
 
-    // Relación: Una mascota tiene muchas citas
-    @OneToMany(mappedBy = "mascota", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // Relación: Una mascota tiene muchas citas (sin cascade, para no borrar el historial en silencio)
+    @OneToMany(mappedBy = "mascota", fetch = FetchType.LAZY)
     @JsonIgnoreProperties("mascota")
     private List<Cita> citas = new ArrayList<>();
 }

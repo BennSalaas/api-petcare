@@ -2,10 +2,12 @@ package com.petcare.api_petcare.service;
 
 import com.petcare.api_petcare.entity.Dueno;
 import com.petcare.api_petcare.entity.Mascota;
+import com.petcare.api_petcare.repository.CitaRepository;
 import com.petcare.api_petcare.repository.DuenoRepository;
 import com.petcare.api_petcare.repository.MascotaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -15,10 +17,14 @@ public class MascotaService {
 
     private final MascotaRepository mascotaRepository;
     private final DuenoRepository duenoRepository;
+    private final CitaRepository citaRepository;
 
-    public MascotaService(MascotaRepository mascotaRepository, DuenoRepository duenoRepository) {
+    public MascotaService(MascotaRepository mascotaRepository,
+                          DuenoRepository duenoRepository,
+                          CitaRepository citaRepository) {
         this.mascotaRepository = mascotaRepository;
         this.duenoRepository = duenoRepository;
+        this.citaRepository = citaRepository;
     }
 
     public List<Mascota> obtenerTodas() {
@@ -57,8 +63,12 @@ public class MascotaService {
         return mascotaRepository.save(mascotaExistente);
     }
 
+    // Borrado explícito: la confirmación la pide el frontend, y aquí se eliminan
+    // primero las citas de la mascota (la entidad ya no usa cascade).
+    @Transactional
     public void eliminar(Long id) {
         Mascota mascota = obtenerPorId(id);
+        citaRepository.deleteAll(citaRepository.findByMascotaId(id));
         mascotaRepository.delete(mascota);
     }
 }
